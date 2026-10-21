@@ -1,179 +1,80 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -eo pipefail
 
-echo "=== Building Web Dist Assets ==="
-npm run build
+echo "=========================================="
+echo "  Haffu Quiz Game - Android APK Builder  "
+echo "=========================================="
 
-echo "=== Setting up APK Build Workspace ==="
-BUILD_DIR="/tmp/apk-build"
-rm -rf "$BUILD_DIR"
-mkdir -p "$BUILD_DIR/src/com/haffu/quizgame"
-mkdir -p "$BUILD_DIR/gen"
-mkdir -p "$BUILD_DIR/bin"
-mkdir -p "$BUILD_DIR/res/values"
-mkdir -p "$BUILD_DIR/res/drawable"
-mkdir -p "$BUILD_DIR/res/mipmap-hdpi"
-mkdir -p "$BUILD_DIR/res/mipmap-mdpi"
-mkdir -p "$BUILD_DIR/res/mipmap-xhdpi"
-mkdir -p "$BUILD_DIR/res/mipmap-xxhdpi"
-mkdir -p "$BUILD_DIR/res/mipmap-xxxhdpi"
-mkdir -p "$BUILD_DIR/assets"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+cd "${ROOT_DIR}"
 
-# Copy dist files into assets
-cp -r dist "$BUILD_DIR/assets/"
-
-# Copy icon
-cp public/pwa-512x512.png "$BUILD_DIR/res/mipmap-xxxhdpi/ic_launcher.png"
-cp public/pwa-192x192.png "$BUILD_DIR/res/mipmap-xxhdpi/ic_launcher.png"
-cp public/pwa-192x192.png "$BUILD_DIR/res/mipmap-xhdpi/ic_launcher.png"
-cp public/pwa-192x192.png "$BUILD_DIR/res/mipmap-hdpi/ic_launcher.png"
-cp public/pwa-192x192.png "$BUILD_DIR/res/mipmap-mdpi/ic_launcher.png"
-
-# Write strings.xml
-cat << 'EOF' > "$BUILD_DIR/res/values/strings.xml"
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">Haffu Quiz Game</string>
-</resources>
-EOF
-
-# Write AndroidManifest.xml
-cat << 'EOF' > "$BUILD_DIR/AndroidManifest.xml"
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.haffu.quizgame"
-    android:versionCode="1"
-    android:versionName="1.0.0">
-
-    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
-    <application
-        android:label="@string/app_name"
-        android:icon="@mipmap/ic_launcher"
-        android:allowBackup="true"
-        android:hardwareAccelerated="true">
-        <activity
-            android:name="com.haffu.quizgame.MainActivity"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-    </application>
-</manifest>
-EOF
-
-# Write MainActivity.java
-cat << 'EOF' > "$BUILD_DIR/src/com/haffu/quizgame/MainActivity.java"
-package com.haffu.quizgame;
-
-import android.app.Activity;
-import android.os.Bundle;
-import android.view.Window;
-import android.view.WindowManager;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-
-public class MainActivity extends Activity {
-    private WebView mWebView;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-        mWebView = new WebView(this);
-        WebSettings settings = mWebView.getSettings();
-        settings.setJavaScriptEnabled(true);
-        settings.setDomStorageEnabled(true);
-        settings.setDatabaseEnabled(true);
-        settings.setAllowFileAccess(true);
-        settings.setMediaPlaybackRequiresUserGesture(false);
-
-        mWebView.setWebViewClient(new WebViewClient());
-        mWebView.loadUrl("file:///android_asset/dist/index.html");
-
-        setContentView(mWebView);
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (mWebView != null && mWebView.canGoBack()) {
-            mWebView.goBack();
-        } else {
-            super.onBackPressed();
-        }
-    }
-}
-EOF
-
-echo "=== 1. Compiling Android Resources with aapt ==="
-aapt package -f -m \
-    -J "$BUILD_DIR/gen" \
-    -M "$BUILD_DIR/AndroidManifest.xml" \
-    -S "$BUILD_DIR/res" \
-    -I /tmp/android.jar
-
-echo "=== 2. Compiling Java Source Files ==="
-javac -encoding UTF-8 \
-    -classpath /tmp/android.jar \
-    -d "$BUILD_DIR/bin" \
-    "$BUILD_DIR/gen/com/haffu/quizgame/R.java" \
-    "$BUILD_DIR/src/com/haffu/quizgame/MainActivity.java"
-
-echo "=== 3. Converting Bytecode to Dalvik Executable (classes.dex) with D8 ==="
-java -cp /tmp/r8.jar com.android.tools.r8.D8 \
-    --min-api 21 \
-    --lib /tmp/android.jar \
-    --output "$BUILD_DIR" \
-    $(find "$BUILD_DIR/bin" -name "*.class")
-
-echo "=== 4. Packaging APK with aapt ==="
-aapt package -f \
-    -M "$BUILD_DIR/AndroidManifest.xml" \
-    -S "$BUILD_DIR/res" \
-    -A "$BUILD_DIR/assets" \
-    -I /tmp/android.jar \
-    -F "$BUILD_DIR/unaligned.apk"
-
-# Add classes.dex into unaligned.apk
-(cd "$BUILD_DIR" && aapt add unaligned.apk classes.dex)
-
-echo "=== 5. Aligning APK with zipalign ==="
-zipalign -v -p 4 "$BUILD_DIR/unaligned.apk" "$BUILD_DIR/aligned.apk"
-
-echo "=== 6. Generating Keystore & Signing APK with apksigner ==="
-KEYSTORE="/tmp/haffu-release.jks"
-if [ ! -f "$KEYSTORE" ]; then
-    keytool -genkeypair -v \
-        -keystore "$KEYSTORE" \
-        -alias haffu \
-        -keyalg RSA \
-        -keysize 2048 \
-        -validity 10000 \
-        -storepass haffu123 \
-        -keypass haffu123 \
-        -dname "CN=Haffu, OU=Kids, O=HaffuGames, L=City, S=State, C=IN"
+# 1. Check Node.js and dependencies
+if ! command -v node >/dev/null 2>&1; then
+  echo "[-] Error: Node.js is not installed or not in PATH." >&2
+  exit 1
 fi
 
-apksigner sign \
-    --ks "$KEYSTORE" \
-    --ks-key-alias haffu \
-    --ks-pass pass:haffu123 \
-    --key-pass pass:haffu123 \
-    --out "public/haffu-quiz-game.apk" \
-    "$BUILD_DIR/aligned.apk"
+if [ ! -d "node_modules" ]; then
+  echo "[*] node_modules not found. Running npm install..."
+  npm install
+fi
 
-echo "=== 7. Verifying Signed APK ==="
-apksigner verify --verbose "public/haffu-quiz-game.apk"
+# 2. Build production web assets
+echo "[*] Step 1/4: Building web production assets (Vite)..."
+npm run build
 
-ls -lh "public/haffu-quiz-game.apk"
-echo "=== SUCCESS: public/haffu-quiz-game.apk generated successfully! ==="
+if [ ! -f "dist/index.html" ]; then
+  echo "[-] Error: Production web build failed. dist/index.html is missing." >&2
+  exit 1
+fi
+echo "[+] Web build successful: dist/ ready."
+
+# 3. Synchronize with Capacitor Android project
+echo "[*] Step 2/4: Synchronizing web assets with Capacitor Android..."
+if ! command -v npx >/dev/null 2>&1; then
+  echo "[-] Error: npx is required to run Capacitor." >&2
+  exit 1
+fi
+
+npx cap sync android
+echo "[+] Capacitor sync successful."
+
+# 4. Check Java and Android SDK prerequisites
+echo "[*] Step 3/4: Checking Android build prerequisites..."
+if ! command -v java >/dev/null 2>&1 && [ -z "${JAVA_HOME}" ]; then
+  echo "[-] Note: Java (JDK 17+) is required for local Gradle builds." >&2
+  echo "    In GitHub Actions, this is automatically configured via actions/setup-java@v4." >&2
+  echo "    If running locally, please install OpenJDK 17 and set JAVA_HOME." >&2
+  exit 1
+fi
+
+if [ ! -f "android/gradlew" ]; then
+  echo "[-] Error: android/gradlew is missing. Please run 'npx cap add android' first." >&2
+  exit 1
+fi
+
+chmod +x android/gradlew
+
+# 5. Build Android Debug APK with Gradle
+echo "[*] Step 4/4: Building Android debug APK with Gradle..."
+cd android
+./gradlew assembleDebug --stacktrace --no-daemon
+cd "${ROOT_DIR}"
+
+EXPECTED_APK="android/app/build/outputs/apk/debug/app-debug.apk"
+if [ ! -f "${EXPECTED_APK}" ]; then
+  echo "[-] Error: Gradle build finished but APK was not found at ${EXPECTED_APK}." >&2
+  exit 1
+fi
+
+APK_SIZE=$(du -h "${EXPECTED_APK}" | cut -f1)
+echo "[+] SUCCESS: APK built successfully!"
+echo "    Path: ${EXPECTED_APK}"
+echo "    Size: ${APK_SIZE}"
+
+# Copy to public and dist for in-browser download
+mkdir -p public dist
+cp "${EXPECTED_APK}" "public/haffu-quiz-game.apk"
+cp "${EXPECTED_APK}" "dist/haffu-quiz-game.apk" 2>/dev/null || true
+echo "[+] APK copied to public/haffu-quiz-game.apk"

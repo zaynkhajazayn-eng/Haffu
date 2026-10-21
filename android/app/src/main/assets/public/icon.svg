@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7e22ce" />
+      <stop offset="50%" stop-color="#a21caf" />
+      <stop offset="100%" stop-color="#be185d" />
+    </linearGradient>
+    <linearGradient id="mane" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+    <linearGradient id="face" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="100%" stop-color="#fde047" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#4a044e" flood-opacity="0.4" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded rect -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)" />
+
+  <!-- Outer subtle glow ring -->
+  <circle cx="256" cy="256" r="210" fill="none" stroke="#ffffff" stroke-opacity="0.15" stroke-width="4" stroke-dasharray="8 8" />
+
+  <!-- Main Mascot Container -->
+  <g filter="url(#shadow)">
+    <!-- Lion Mane Petals (12 petals in a circle) -->
+    <g fill="url(#mane)">
+      <circle cx="256" cy="116" r="46" />
+      <circle cx="326" cy="135" r="46" />
+      <circle cx="376" cy="186" r="46" />
+      <circle cx="396" cy="256" r="46" />
+      <circle cx="376" cy="326" r="46" />
+      <circle cx="326" cy="376" r="46" />
+      <circle cx="256" cy="396" r="46" />
+      <circle cx="186" cy="376" r="46" />
+      <circle cx="136" cy="326" r="46" />
+      <circle cx="116" cy="256" r="46" />
+      <circle cx="136" cy="186" r="46" />
+      <circle cx="186" cy="135" r="46" />
+    </g>
+
+    <!-- Ears -->
+    <circle cx="166" cy="166" r="30" fill="#f43f5e" />
+    <circle cx="166" cy="166" r="18" fill="#fda4af" />
+    <circle cx="346" cy="166" r="30" fill="#f43f5e" />
+    <circle cx="346" cy="166" r="18" fill="#fda4af" />
+
+    <!-- Cute Crown -->
+    <path d="M226 130 L256 90 L286 130 L306 106 L300 146 L212 146 L206 106 Z" fill="#ec4899" stroke="#be185d" stroke-width="3" stroke-linejoin="round" />
+    <circle cx="256" cy="86" r="7" fill="#fbbf24" />
+    <circle cx="206" cy="102" r="5" fill="#38bdf8" />
+    <circle cx="306" cy="102" r="5" fill="#38bdf8" />
+
+    <!-- Lion Face Base -->
+    <circle cx="256" cy="260" r="110" fill="url(#face)" />
+
+    <!-- Rosy Cheeks -->
+    <ellipse cx="196" cy="286" rx="20" ry="12" fill="#fb7185" opacity="0.6" />
+    <ellipse cx="316" cy="286" rx="20" ry="12" fill="#fb7185" opacity="0.6" />
+
+    <!-- Playful Winking Eyes -->
+    <!-- Left Eye: Winking curved arc -->
+    <path d="M184 246 Q200 230 216 246" stroke="#1e1b4b" stroke-width="7" stroke-linecap="round" fill="none" />
+    <!-- Right Eye: Big sparkling open eye -->
+    <circle cx="296" cy="242" r="16" fill="#1e1b4b" />
+    <circle cx="291" cy="237" r="6" fill="#ffffff" />
+    <circle cx="303" cy="247" r="2.5" fill="#ffffff" />
+
+    <!-- Cute Nose -->
+    <path d="M246 270 Q256 264 266 270 Q256 284 246 270 Z" fill="#831843" />
+
+    <!-- Happy Smile -->
+    <path d="M236 288 Q256 312 276 288" stroke="#831843" stroke-width="5" stroke-linecap="round" fill="none" />
+    <path d="M246 295 Q256 316 266 295" fill="#f43f5e" />
+  </g>
+
+  <!-- Sparkle Stars -->
+  <g fill="#fde047">
+    <path d="M96 96 Q108 96 108 84 Q108 96 120 96 Q108 96 108 108 Q108 96 96 96 Z" />
+    <path d="M396 76 Q406 76 406 66 Q406 76 416 76 Q406 76 406 86 Q406 76 396 76 Z" />
+    <path d="M416 416 Q428 416 428 404 Q428 416 440 416 Q428 416 428 428 Q428 416 416 416 Z" />
+  </g>
+</svg>
