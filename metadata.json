@@ -1,0 +1,6 @@
+{
+  "name": "Haffu Quiz Game",
+  "description": "Kids bilingual quiz game featuring animal, bird, fruit, and vehicle identification with English and Hindi speech and Explore mode.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
