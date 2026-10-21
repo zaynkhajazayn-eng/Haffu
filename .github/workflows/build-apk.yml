@@ -1,3 +1,4 @@
+
 name: Build APK
 
 on:
@@ -7,38 +8,50 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
-    name: Build APK
+    name: Build Haffu APK
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
 
-      - name: Build debug APK
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build tools
         run: |
-          GRADLEW_PATH=$(find . -name "gradlew" | head -n 1)
-          if [ -z "$GRADLEW_PATH" ]; then
-            echo "gradlew nahi mila!"
-            exit 1
-          fi
-          TARGET_DIR=$(dirname "$GRADLEW_PATH")
-          echo "Building in: $TARGET_DIR"
-          cd "$TARGET_DIR"
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          echo "$ANDROID_HOME/build-tools/35.0.0" >> "$GITHUB_PATH"
+          ln -sf "$ANDROID_HOME/platforms/android-35/android.jar" /tmp/android.jar
+          test -f "$ANDROID_HOME/build-tools/35.0.0/lib/d8.jar"
+          ln -sf "$ANDROID_HOME/build-tools/35.0.0/lib/d8.jar" /tmp/r8.jar
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build and sign APK
+        run: npm run build:apk
 
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
-          path: '**/*.apk'
+          name: haffu-quiz-game-apk
+          path: public/haffu-quiz-game.apk
+          if-no-files-found: error
+          
