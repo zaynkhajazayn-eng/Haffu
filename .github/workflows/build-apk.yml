@@ -1,9 +1,8 @@
-name: Build APK
+name: Build Haffu Quiz APK
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -11,54 +10,64 @@ permissions:
 
 jobs:
   build:
-    name: Build Haffu Debug APK
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 20
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: 20
+          cache: 'npm'   # agar bun/yarn use ho to change kar dena
 
-      - name: Set up Java 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
       - name: Install dependencies
-        run: npm ci || npm install
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          elif [ -f bun.lockb ]; then
+            npm install -g bun && bun install
+          elif [ -f yarn.lock ]; then
+            yarn install --frozen-lockfile
+          else
+            npm install
+          fi
 
-      - name: Build web production bundle
+      - name: Build web (Vite)
         run: npm run build
 
-      - name: Sync web assets with Capacitor Android
+      - name: Capacitor sync
         run: npx cap sync android
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
-      - name: Build Android debug APK
+      - name: Build Debug APK
         working-directory: android
-        run: ./gradlew assembleDebug --stacktrace --no-daemon
+        run: ./gradlew assembleDebug --stacktrace
 
-      - name: Verify APK was created
+      - name: Find and verify APK
+        id: find_apk
         run: |
-          APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
-          if [ ! -f "$APK_PATH" ]; then
-            echo "[-] Error: Expected APK not found at $APK_PATH" >&2
+          APK_PATH=$(find android/app/build/outputs/apk -name "*.apk" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            echo "ERROR: No APK found!"
             exit 1
           fi
-          echo "[+] Found APK at $APK_PATH ($(du -h "$APK_PATH" | cut -f1))"
+          echo "Found APK: $APK_PATH"
+          ls -lh "$APK_PATH"
+          echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
 
-      - name: Upload APK artifact
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: haffu-quiz-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
+          path: ${{ steps.find_apk.outputs.apk_path }}
+          retention-days: 14
