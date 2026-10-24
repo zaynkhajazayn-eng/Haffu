@@ -17,6 +17,7 @@ export const ItemImage: React.FC<ItemImageProps> = ({
   showEmojiInCorner = false,
 }) => {
   const [hasError, setHasError] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // Dynamic keyword-based image URL as specified in prompt
   const initialUrl =
@@ -27,6 +28,7 @@ export const ItemImage: React.FC<ItemImageProps> = ({
   // Synchronize state when item changes
   useEffect(() => {
     setHasError(false);
+    setIsLoaded(false);
     const nextUrl =
       item.image ||
       `https://loremflickr.com/400/400/${encodeURIComponent((item.keyword || item.english).toLowerCase().trim())}`;
@@ -34,7 +36,6 @@ export const ItemImage: React.FC<ItemImageProps> = ({
   }, [item.id, item.image, item.keyword, item.english]);
 
   const handleError = () => {
-    // Smoothly fallback to high-res SVG or large emoji centered on a clean background
     setHasError(true);
   };
 
@@ -63,50 +64,47 @@ export const ItemImage: React.FC<ItemImageProps> = ({
 
   const theme = categoryThemes[item.category] || categoryThemes.animals;
 
-  if (hasError) {
-    return (
-      <div
-        className={`${className} bg-gradient-to-br ${theme.bg} flex flex-col items-center justify-center p-3 relative overflow-hidden select-none border-2 rounded-2xl`}
-      >
-        {/* Decorative soft geometric rings (high-res SVG style) */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+  return (
+    <div
+      className={`relative ${className} bg-gradient-to-br ${theme.bg} overflow-hidden rounded-2xl flex items-center justify-center border border-white/20 select-none shadow-inner`}
+    >
+      {/* Underlying decorative vector & emoji - guarantees instant zero-blank offline recognition */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center p-2 pointer-events-none select-none">
+        <div className="absolute inset-0 flex items-center justify-center opacity-20">
           <svg className="w-full h-full" viewBox="0 0 100 100" fill="none">
             <circle cx="50" cy="50" r="38" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4" />
             <circle cx="50" cy="50" r="24" stroke="currentColor" strokeWidth="1.5" />
           </svg>
         </div>
-
-        {/* High-res centered emoji */}
         <span
-          className="text-6xl sm:text-7xl filter drop-shadow-md transform transition-transform hover:scale-110 duration-200 select-none"
+          className="text-5xl sm:text-6xl filter drop-shadow-md select-none transform transition-transform"
           role="img"
           aria-label={item.english}
         >
           {item.emoji}
         </span>
-
-        {/* Clean keyword tag */}
         <span
-          className={`text-[11px] sm:text-xs font-black tracking-wide uppercase mt-1 px-2.5 py-0.5 rounded-full border shadow-xs ${theme.badge} select-none`}
+          className={`text-[10px] font-black tracking-wide uppercase mt-1 px-2 py-0.5 rounded-full border shadow-xs ${theme.badge} select-none`}
         >
           {item.english}
         </span>
       </div>
-    );
-  }
 
-  return (
-    <div className={`relative ${className} bg-slate-100 overflow-hidden rounded-2xl flex items-center justify-center`}>
-      <img
-        src={currentSrc}
-        alt={alt || item.english}
-        referrerPolicy="no-referrer"
-        onError={handleError}
-        className={imageClassName}
-        loading="eager"
-      />
+      {/* Online/cached image overlay */}
+      {!hasError && (
+        <img
+          src={currentSrc}
+          alt={alt || item.english}
+          referrerPolicy="no-referrer"
+          onError={handleError}
+          onLoad={() => setIsLoaded(true)}
+          className={`${imageClassName} z-10 transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+          loading="eager"
+        />
+      )}
+
       {showEmojiInCorner && (
-        <span className="absolute bottom-1.5 left-1.5 text-xl select-none drop-shadow-md">
+        <span className="absolute bottom-1.5 left-1.5 text-xl select-none drop-shadow-md z-20">
           {item.emoji}
         </span>
       )}

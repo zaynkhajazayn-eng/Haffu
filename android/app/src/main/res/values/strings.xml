@@ -1,7 +1,25 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Haffu Quiz Game</string>
-    <string name="title_activity_main">Haffu Quiz Game</string>
-    <string name="package_name">com.haffu.quizgame</string>
-    <string name="custom_url_scheme">com.haffu.quizgame</string>
+    <string name="app_name">Haffu Quiz</string>
+    <string name="app_subtitle">Kids Bilingual Quiz • बच्चों के लिए आसान क्विज़</string>
+    <string name="start_quiz">Play Quiz Now! 🚀</string>
+    <string name="select_category_prompt">Choose a Category / श्रेणी चुनें:</string>
+    <string name="category_all">🌟 All Categories (105)</string>
+    <string name="category_fruits">🍎 Fruits • फल (25)</string>
+    <string name="category_animals">🦁 Animals • जानवर (30)</string>
+    <string name="category_birds">🦜 Birds • पक्षी (25)</string>
+    <string name="category_vehicles">🚗 Vehicles • गाड़ियाँ (25)</string>
+    <string name="can_you_find">CAN YOU FIND?</string>
+    <string name="stars_label">Stars ⭐</string>
+    <string name="question_progress_format">Question %1$d / %2$d</string>
+    <string name="timer_seconds_format">%d s</string>
+    <string name="tap_instruction">👉 Tap the correct matching picture to earn stars!</string>
+    <string name="quiz_completed_title">Awesome Job! शाबाश! 🎉</string>
+    <string name="score_summary_format">You scored %1$d out of %2$d questions correctly!</string>
+    <string name="stars_earned_format">+%1$d Stars Earned! ⭐</string>
+    <string name="play_again">Play Again 🔄</string>
+    <string name="back_to_home">Back to Home 🏠</string>
+    <string name="error_title">Oops! Let\'s Try Again</string>
+    <string name="error_message">Something unexpected happened, but Haffu is ready to play!</string>
+    <string name="retry_button">Restart Quiz 🚀</string>
 </resources>

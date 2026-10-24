@@ -19,18 +19,22 @@ function getAudioContext(): AudioContext | null {
 
 export function setSoundEnabled(enabled: boolean) {
   soundEnabled = enabled;
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('haffu_sound_enabled', enabled ? 'true' : 'false');
-  }
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('haffu_sound_enabled', enabled ? 'true' : 'false');
+    }
+  } catch {}
 }
 
 export function getSoundEnabled(): boolean {
-  if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('haffu_sound_enabled');
-    if (saved !== null) {
-      soundEnabled = saved === 'true';
+  try {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('haffu_sound_enabled');
+      if (saved !== null) {
+        soundEnabled = saved === 'true';
+      }
     }
-  }
+  } catch {}
   return soundEnabled;
 }
 

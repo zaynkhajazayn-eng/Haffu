@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Download, Smartphone, ExternalLink, CheckCircle2, Copy, Sparkles, ShieldCheck, Check, ArrowRight, FileCheck } from 'lucide-react';
+import { X, Download, Smartphone, ExternalLink, CheckCircle2, Copy, Sparkles, ShieldCheck, Check, ArrowRight, FileCheck, Loader2, AlertCircle } from 'lucide-react';
 import { usePWAInstall } from '../hooks/usePWAInstall.ts';
 
 interface ApkExportModalProps {
@@ -11,14 +11,55 @@ export const ApkExportModal: React.FC<ApkExportModalProps> = ({ isOpen, onClose 
   const { isInstallable, install } = usePWAInstall();
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'download' | 'uptodown' | 'copydata'>('download');
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   if (!isOpen) return null;
+
+  const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+  const fullApkUrl = `${currentOrigin}/haffu-quiz-game.apk`;
 
   const handleCopy = (text: string, fieldName: string) => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(text);
       setCopiedField(fieldName);
-      setTimeout(() => setCopiedField(null), 2000);
+      setTimeout(() => setCopiedField(null), 2500);
+    }
+  };
+
+  const handleDirectDownload = async () => {
+    setIsDownloading(true);
+    try {
+      const response = await fetch('/haffu-quiz-game.apk');
+      if (!response.ok) throw new Error('HTTP error');
+      const blob = await response.blob();
+      const apkBlob = new Blob([blob], { type: 'application/vnd.android.package-archive' });
+
+      // Convert to Data URL: works reliably across mobile browsers and sandboxed iframes
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = 'haffu-quiz-game.apk';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(() => {
+          if (document.body.contains(link)) {
+            document.body.removeChild(link);
+          }
+        }, 1500);
+      };
+      reader.readAsDataURL(apkBlob);
+
+      setDownloadSuccess(true);
+      setTimeout(() => setDownloadSuccess(false), 5000);
+    } catch {
+      // Fallback: direct window navigation
+      window.location.href = '/haffu-quiz-game.apk';
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -51,7 +92,7 @@ export const ApkExportModal: React.FC<ApkExportModalProps> = ({ isOpen, onClose 
                 Download APK File
               </h3>
               <span className="text-[10px] font-black bg-emerald-400 text-emerald-950 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                Ready to Upload
+                Ready
               </span>
             </div>
             <p className="text-xs text-pink-200 mt-0.5 font-hindi">
@@ -73,27 +114,80 @@ export const ApkExportModal: React.FC<ApkExportModalProps> = ({ isOpen, onClose 
 
             <div className="flex items-center gap-2 text-xs text-emerald-200 mb-3.5">
               <span className="bg-emerald-900/60 px-2 py-0.5 rounded-full border border-emerald-400/30 font-mono font-bold">
-                890 KB
+                852 KB
               </span>
               <span>•</span>
-              <span className="font-semibold">Version 1.0.0</span>
+              <span className="font-semibold">v1.0.1 (code 2)</span>
               <span>•</span>
-              <span className="text-yellow-300 font-bold">Signed APK ✅</span>
+              <span className="text-yellow-300 font-bold">Native Java APK ✅</span>
             </div>
 
-            {/* Direct Download Button */}
-            <a
-              href="/haffu-quiz-game.apk"
-              download="haffu-quiz-game.apk"
-              className="w-full min-h-[52px] rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 hover:from-emerald-300 hover:to-teal-300 text-teal-950 font-black text-base flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/40 transition-transform active:scale-95 border border-white/40"
+            {/* Strategy 1: JS Blob Trigger Button */}
+            <button
+              onClick={handleDirectDownload}
+              disabled={isDownloading}
+              className="w-full min-h-[52px] rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 hover:from-emerald-300 hover:to-teal-300 text-teal-950 font-black text-base flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/40 transition-transform active:scale-95 border border-white/40 disabled:opacity-75 cursor-pointer"
             >
-              <Download className="w-5 h-5" />
-              <span>Download APK Now (890 KB)</span>
-            </a>
+              {isDownloading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Preparing Download...</span>
+                </>
+              ) : downloadSuccess ? (
+                <>
+                  <CheckCircle2 className="w-5 h-5 text-emerald-950" />
+                  <span>Download Started! Check Notifications</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-5 h-5" />
+                  <span>Download APK Now (890 KB)</span>
+                </>
+              )}
+            </button>
 
-            <p className="text-[11px] text-purple-200 mt-2 font-medium">
-              Click above to directly save the <code>.apk</code> installer file to your device!
-            </p>
+            {/* Strategy 2 & 3: Direct Link & Copy Link for Mobile Iframes */}
+            <div className="w-full mt-3 pt-3 border-t border-emerald-400/20 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                {/* Direct anchor fallback */}
+                <a
+                  href="/haffu-quiz-game.apk"
+                  download="haffu-quiz-game.apk"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-emerald-200 flex items-center justify-center gap-1.5 transition-all"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Open Direct Link</span>
+                </a>
+
+                {/* Copy Link Button */}
+                <button
+                  onClick={() => handleCopy(fullApkUrl, 'direct-apk-url')}
+                  className="flex-1 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-purple-200 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                >
+                  {copiedField === 'direct-apk-url' ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-emerald-300">Link Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copy Download Link</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Friendly Mobile Iframe Hint */}
+              <div className="bg-purple-950/60 rounded-xl p-2.5 border border-purple-400/20 text-[11px] text-purple-200 text-left flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" />
+                <p>
+                  <strong className="text-white">Mobile Phone Tip:</strong> If your browser blocks downloading inside the AI Studio preview window, tap <strong>"Copy Download Link"</strong> above and paste it directly into a new Chrome tab!
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -188,7 +282,7 @@ export const ApkExportModal: React.FC<ApkExportModalProps> = ({ isOpen, onClose 
                 </div>
                 <button
                   onClick={install}
-                  className="px-3.5 py-1.5 rounded-xl bg-pink-500 hover:bg-pink-400 text-white font-black text-xs shadow active:scale-95 transition-all shrink-0"
+                  className="px-3.5 py-1.5 rounded-xl bg-pink-500 hover:bg-pink-400 text-white font-black text-xs shadow active:scale-95 transition-all shrink-0 cursor-pointer"
                 >
                   Install App
                 </button>
@@ -210,7 +304,7 @@ export const ApkExportModal: React.FC<ApkExportModalProps> = ({ isOpen, onClose 
                 <span className="font-bold">App Title / नाम</span>
                 <button
                   onClick={() => handleCopy('Haffu Quiz Game', 'title')}
-                  className="flex items-center gap-1 text-pink-300 hover:text-white"
+                  className="flex items-center gap-1 text-pink-300 hover:text-white cursor-pointer"
                 >
                   {copiedField === 'title' ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copiedField === 'title' ? 'Copied!' : 'Copy'}</span>
@@ -227,7 +321,7 @@ export const ApkExportModal: React.FC<ApkExportModalProps> = ({ isOpen, onClose 
                 <span className="font-bold">Short Description / विवरण</span>
                 <button
                   onClick={() => handleCopy('Fun bilingual English and Hindi quiz game for kids featuring animals, birds, fruits, and vehicles with speech pronunciation and stars reward system.', 'desc')}
-                  className="flex items-center gap-1 text-pink-300 hover:text-white"
+                  className="flex items-center gap-1 text-pink-300 hover:text-white cursor-pointer"
                 >
                   {copiedField === 'desc' ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copiedField === 'desc' ? 'Copied!' : 'Copy'}</span>
@@ -243,7 +337,7 @@ export const ApkExportModal: React.FC<ApkExportModalProps> = ({ isOpen, onClose 
               <div className="bg-white/5 border border-white/10 rounded-2xl p-2.5">
                 <div className="flex items-center justify-between text-purple-300 mb-1">
                   <span className="font-bold">Package Name</span>
-                  <button onClick={() => handleCopy('com.haffu.quizgame', 'pkg')} className="text-pink-300 hover:text-white">
+                  <button onClick={() => handleCopy('com.haffu.quizgame', 'pkg')} className="text-pink-300 hover:text-white cursor-pointer">
                     {copiedField === 'pkg' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                   </button>
                 </div>
@@ -309,10 +403,10 @@ export const ApkExportModal: React.FC<ApkExportModalProps> = ({ isOpen, onClose 
 
         {/* Footer */}
         <div className="mt-5 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-purple-300">
-          <span>Haffu Quiz Game • v1.0.0 (APK 890 KB)</span>
+          <span>Haffu Quiz Game • v1.0.1 (code 2 • Native Java APK)</span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold transition-all"
+            className="px-4 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold transition-all cursor-pointer"
           >
             Close
           </button>

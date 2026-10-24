@@ -1,3 +1,4 @@
+import fs from 'fs';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
@@ -8,6 +9,29 @@ export default defineConfig(() => {
   return {
     base: './',
     plugins: [
+      {
+        name: 'serve-apk',
+        configureServer(server) {
+          server.middlewares.use((req, res, next) => {
+            if (req.url && (req.url === '/haffu-quiz-game.apk' || req.url.startsWith('/haffu-quiz-game.apk?'))) {
+              const apkPath = path.resolve(__dirname, 'public/haffu-quiz-game.apk');
+              if (fs.existsSync(apkPath)) {
+                const stat = fs.statSync(apkPath);
+                res.writeHead(200, {
+                  'Content-Type': 'application/vnd.android.package-archive',
+                  'Content-Disposition': 'attachment; filename="haffu-quiz-game.apk"',
+                  'Content-Length': stat.size,
+                  'Access-Control-Allow-Origin': '*',
+                });
+                const stream = fs.createReadStream(apkPath);
+                stream.pipe(res);
+                return;
+              }
+            }
+            next();
+          });
+        },
+      },
       react(),
       tailwindcss(),
       VitePWA({

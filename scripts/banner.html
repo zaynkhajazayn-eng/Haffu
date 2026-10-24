@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 1024px;
+      height: 500px;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #4c1d95 0%, #701a75 50%, #db2777 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 40px 60px;
+      position: relative;
+      color: #ffffff;
+    }
+    /* Floating decorative circles and stars */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(40px);
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    .blob-1 { top: -40px; left: -40px; width: 300px; height: 300px; background: #fbbf24; }
+    .blob-2 { bottom: -60px; right: -40px; width: 350px; height: 350px; background: #38bdf8; }
+    .blob-3 { top: 120px; right: 300px; width: 220px; height: 220px; background: #ec4899; }
+
+    .content {
+      z-index: 2;
+      max-width: 560px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 8px 18px;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #fef08a;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 56px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 12px;
+      text-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    .hindi-title {
+      font-size: 26px;
+      color: #fbcfe8;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .feat-chip {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .visual {
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .mascot-card {
+      width: 280px;
+      height: 280px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(14px);
+      border: 3px solid rgba(255, 255, 255, 0.35);
+      border-radius: 40px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .mascot-icon {
+      width: 170px;
+      height: 170px;
+      border-radius: 30px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+    .stars-row {
+      display: flex;
+      gap: 6px;
+      font-size: 24px;
+      margin-top: 14px;
+    }
+    .age-badge {
+      position: absolute;
+      top: -12px;
+      right: -12px;
+      background: #e11d48;
+      color: white;
+      font-weight: 900;
+      font-size: 14px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      border: 2px solid #ffffff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="content">
+    <div class="badge">
+      <span>🦁</span>
+      <span>Kids Bilingual Learning</span>
+    </div>
+    <h1>Haffu Quiz Game</h1>
+    <div class="hindi-title">हाफ़ू क्विज़ खेल • बच्चों के लिए आसान और मज़ेदार</div>
+    <div class="features">
+      <div class="feat-chip">🦁 150+ Animals, Birds, Fruits, Vehicles</div>
+      <div class="feat-chip">🗣️ English & Hindi Voice</div>
+      <div class="feat-chip">⭐ Stars & Medals</div>
+      <div class="feat-chip">📴 100% Offline</div>
+    </div>
+  </div>
+
+  <div class="visual">
+    <div class="mascot-card">
+      <div class="age-badge">Ages 3+</div>
+      <img src="public/pwa-512x512.png" alt="Haffu Mascot" class="mascot-icon" />
+      <div class="stars-row">
+        <span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

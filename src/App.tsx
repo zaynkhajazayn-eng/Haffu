@@ -16,18 +16,22 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryType | 'all'>('all');
   const [questionCount, setQuestionCount] = useState<number>(15);
   const [stars, setStars] = useState<number>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('haffu_total_stars');
-      return saved ? parseInt(saved, 10) || 0 : 12; // Start with 12 welcome stars!
-    }
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('haffu_total_stars');
+        return saved ? parseInt(saved, 10) || 0 : 12; // Start with 12 welcome stars!
+      }
+    } catch {}
     return 12;
   });
   const [soundOn, setSoundOn] = useState<boolean>(() => getSoundEnabled());
   const [voicePref, setVoicePref] = useState<'both' | 'en' | 'hi'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('haffu_voice_pref');
-      if (saved === 'en' || saved === 'hi' || saved === 'both') return saved;
-    }
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('haffu_voice_pref');
+        if (saved === 'en' || saved === 'hi' || saved === 'both') return saved;
+      }
+    } catch {}
     return 'both';
   });
 
@@ -45,9 +49,11 @@ export default function App() {
   const addStars = (newStars: number) => {
     setStars(prev => {
       const updated = prev + newStars;
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('haffu_total_stars', updated.toString());
-      }
+      try {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('haffu_total_stars', updated.toString());
+        }
+      } catch {}
       return updated;
     });
   };
@@ -60,9 +66,11 @@ export default function App() {
 
   const handleChangeVoicePref = (pref: 'both' | 'en' | 'hi') => {
     setVoicePref(pref);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('haffu_voice_pref', pref);
-    }
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('haffu_voice_pref', pref);
+      }
+    } catch {}
     playPopSound();
   };
 

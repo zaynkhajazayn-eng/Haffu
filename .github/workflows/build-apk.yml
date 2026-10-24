@@ -40,18 +40,8 @@ jobs:
             npm install
           fi
 
-      - name: Build web (Vite)
-        run: npm run build
-
-      - name: Capacitor sync
-        run: npx cap sync android
-
-      - name: Make gradlew executable
-        run: chmod +x android/gradlew
-
-      - name: Build Debug APK
-        working-directory: android
-        run: ./gradlew assembleDebug --stacktrace
+      - name: Build Native Java Android APK
+        run: bash scripts/build-native-apk.sh
 
       - name: Find and verify APK
         id: find_apk

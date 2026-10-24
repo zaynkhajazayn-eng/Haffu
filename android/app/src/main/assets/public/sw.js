@@ -77,6 +77,9 @@ define(['./workbox-afac4cd2'], (function (workbox) { 'use strict';
    * See https://goo.gl/S9QRab
    */
   workbox.precacheAndRoute([{
+    "url": "registerSW.js",
+    "revision": "402b66900e731ca748771b6fc5e7a068"
+  }, {
     "url": "pwa-maskable-512x512.png",
     "revision": "c25ac93ccca92208536dfe4bf264cfea"
   }, {
@@ -87,18 +90,30 @@ define(['./workbox-afac4cd2'], (function (workbox) { 'use strict';
     "revision": "d92daaf045bc1eaf56bc2fb62c69b92f"
   }, {
     "url": "index.html",
-    "revision": "8748130d9ef83db804d0c314710414cc"
+    "revision": "88c4a224306ca021dc2024cf088f605a"
   }, {
     "url": "icon.svg",
     "revision": "d239e7b139c213d827746ae6844a44b3"
   }, {
+    "url": "featured-1024x500.png",
+    "revision": "d440f53269ae2b451d9eafb3e6327027"
+  }, {
     "url": "apple-touch-icon.png",
     "revision": "eb2dc5ca818398870116c51a3d0cfef9"
   }, {
-    "url": "assets/index-Rb-ZzNRm.css",
+    "url": "screenshots/screen-2-quiz.png",
+    "revision": "1a3aa50929c10214f4705310cf52b360"
+  }, {
+    "url": "screenshots/screen-2-correct.png",
+    "revision": "13139703e7d178d70bfd73ee108fc6d1"
+  }, {
+    "url": "screenshots/screen-1-home.png",
+    "revision": "a02636b3b8b9636e5a7c6d1fae3a3734"
+  }, {
+    "url": "assets/index-CSmSaN1Q.js",
     "revision": null
   }, {
-    "url": "assets/index-8gHw4BN8.js",
+    "url": "assets/index-Bcx9QUgs.css",
     "revision": null
   }, {
     "url": "assets/aistudio/Screenshot_20261021-151142_Chrome_eb0a4834.png",
